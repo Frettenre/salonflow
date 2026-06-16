@@ -209,39 +209,35 @@ function setLoginMode(mode) {
 
 function navigateTo(viewName) {
     state.currentView = viewName;
+    console.log("[Navigation] Transitioning layout to viewport state:", viewName);
 
-    document.getElementById('view-login').classList.add('hidden');
-    document.getElementById('view-home').classList.add('hidden');
-    document.getElementById('view-salon').classList.add('hidden');
-    document.getElementById('view-partner').classList.add('hidden');
-    document.getElementById('view-category').classList.add('hidden');
-    document.getElementById('view-profile').classList.add('hidden');
-
-    const reviewsView = document.getElementById('view-reviews');
-    if (reviewsView) {
-        reviewsView.classList.add('hidden');
-    }
-
-    if (viewName === 'login') {
-        document.getElementById('view-login').classList.remove('hidden');
-    } else if (viewName === 'home') {
-        document.getElementById('view-home').classList.remove('hidden');
-        fetchHomeData();
-    } else if (viewName === 'salon') {
-        document.getElementById('view-salon').classList.remove('hidden');
-    } else if (viewName === 'partner') {
-        document.getElementById('view-partner').classList.remove('hidden');
-        fetchPartnerWorkspace();
-    } else if (viewName === 'category') {
-        document.getElementById('view-category').classList.remove('hidden');
-    } else if (viewName === 'profile') {
-        document.getElementById('view-profile').classList.remove('hidden');
-        openProfileWorkspace();
-    } else if (viewName === 'reviews') {
-        if (reviewsView) {
-            reviewsView.classList.remove('hidden');
+    // 1. Crash-proof loop hiding all viewport panels safely without throwing null pointer errors
+    const viewList = ['view-login', 'view-home', 'view-salon', 'view-partner', 'view-category', 'view-profile', 'view-reviews'];
+    viewList.forEach(viewId => {
+        const panel = document.getElementById(viewId);
+        if (panel) {
+            panel.classList.add('hidden');
         }
+    });
+
+    // 2. Identify the target panel and display it
+    const targetId = viewName.startsWith('view-') ? viewName : 'view-' + viewName;
+    const targetPanel = document.getElementById(targetId);
+    if (targetPanel) {
+        targetPanel.classList.remove('hidden');
+    } else {
+        console.warn(`[Navigation] Target element with ID "${targetId}" could not be resolved in the DOM.`);
     }
+
+    // 3. Trigger state-hydration callbacks depending on active tab
+    if (viewName === 'home') {
+        fetchHomeData();
+    } else if (viewName === 'partner') {
+        fetchPartnerWorkspace();
+    } else if (viewName === 'profile') {
+        openProfileWorkspace();
+    }
+
     renderNavActions();
     translateUI();
     lucide.createIcons();
@@ -719,8 +715,11 @@ function viewSalonReviewsPage() {
 
 // REST Client: Fetches dataset asynchronously matching active Salon ID matching Controller mapping
 async function fetchSalonReviewsFeed() {
+    console.log("[Reviews Debug] fetchSalonReviewsFeed invoked. Active Salon State:", state.selectedSalon);
+
     // 1. Fail gracefully if no salon is active
     if (!state.selectedSalon) {
+        console.warn("[Reviews Debug] state.selectedSalon is null or undefined. Aborting lookup.");
         navigateTo('home');
         return;
     }
@@ -728,15 +727,21 @@ async function fetchSalonReviewsFeed() {
     const salonId = state.selectedSalon.id;
     const feedContainer = document.getElementById('salon-reviews-feed-container');
 
-    // 2. Wrap DOM updates in safe null-checks so a missing element won't break execution
+    // 2. Safe parsing of header attributes
     const titleEl = document.getElementById('reviews-salon-title');
     if (titleEl) titleEl.innerText = `${state.selectedSalon.name} Reviews`;
 
     const scoreEl = document.getElementById('reviews-aggregate-score');
-    if (scoreEl) scoreEl.innerText = (state.selectedSalon.rating || 5.0).toFixed(1);
+    if (scoreEl) {
+        const rawRating = parseFloat(state.selectedSalon.rating);
+        scoreEl.innerText = isNaN(rawRating) ? "5.0" : rawRating.toFixed(1);
+    }
 
     const countEl = document.getElementById('reviews-total-count');
-    if (countEl) countEl.innerText = `Based on ${state.selectedSalon.reviewCount || 0} entries`;
+    if (countEl) {
+        const countValue = parseInt(state.selectedSalon.reviewCount || 0, 10);
+        countEl.innerText = `Based on ${countValue} entries`;
+    }
 
     const backBtn = document.getElementById('reviews-back-btn');
     if (backBtn) backBtn.setAttribute('onclick', `openSalonDetail(${salonId})`);
@@ -744,16 +749,19 @@ async function fetchSalonReviewsFeed() {
     // First transition to reviews page view state
     navigateTo('reviews');
 
-    if (!feedContainer) return;
-    feedContainer.innerHTML = `<div class="col-span-full py-8 text-center text-xs font-bold text-slate-400">Loading feedback parameters...</div>`;
+    if (!feedContainer) {
+        console.warn("[Reviews Debug] Element #salon-reviews-feed-container was not found in the DOM.");
+        return;
+    }
+    feedContainer.innerHTML = `<div class="col-span-full py-8 text-center text-xs font-bold text-slate-400 animate-pulse">Loading feedback parameters...</div>`;
 
     try {
+        console.log(`[Reviews Debug] Fetching from API: /api/salon/${salonId}/reviews`);
         const res = await fetch(`/api/salon/${salonId}/reviews`);
         if (res.ok) {
             const data = await res.json();
-
-            // Adapt dynamically to both an object wrapper or a direct array return from your Controller
             state.selectedSalonReviews = Array.isArray(data) ? data : (data.reviews || []);
+            console.log(`[Reviews Debug] Successfully retrieved ${state.selectedSalonReviews.length} reviews.`);
 
             // 3. Fallback message if database table is completely empty
             if (state.selectedSalonReviews.length === 0) {
@@ -765,11 +773,11 @@ async function fetchSalonReviewsFeed() {
                 return;
             }
 
-            // 4. Clean, crash-proof map rendering loop
+            // 4. Safe mapping loop converting raw entries cleanly
             feedContainer.innerHTML = state.selectedSalonReviews.map(rev => {
                 const reviewerName = rev.name || rev.clientName || rev.reviewerName || "Anonymous Client";
                 const reviewText = rev.text || rev.comment || rev.content || "Great service!";
-                const reviewStars = rev.stars || rev.rating || 5;
+                const reviewStars = parseInt(rev.stars || rev.rating || 5, 10);
                 const rawDate = rev.date || rev.createdAt || "";
 
                 let starsHtml = '';
@@ -779,28 +787,29 @@ async function fetchSalonReviewsFeed() {
                 }
 
                 return `
-                  <div class="bg-white border border-slate-200 shadow-2xs rounded-2xl p-5 space-y-3 animate-fade-in">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <h5 class="font-black text-slate-800 text-xs leading-none">${reviewerName}</h5>
-                        <p class="text-[9px] text-slate-400 font-semibold mt-1">${rawDate ? formatFriendlyDate(rawDate) : 'Recently'}</p>
-                      </div>
-                      <div class="flex items-center gap-0.5 bg-slate-50 border border-slate-100 px-2 py-1 rounded-lg">
-                        ${starsHtml}
-                      </div>
-                    </div>
-                    <p class="text-slate-600 text-xs leading-relaxed font-medium italic">"${reviewText}"</p>
+              <div class="bg-white border border-slate-200 shadow-2xs rounded-2xl p-5 space-y-3 animate-fade-in">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h5 class="font-black text-slate-800 text-xs leading-none">${reviewerName}</h5>
+                    <p class="text-[9px] text-slate-400 font-semibold mt-1">${rawDate ? formatFriendlyDate(rawDate) : 'Recently'}</p>
                   </div>
-                `;
+                  <div class="flex items-center gap-0.5 bg-slate-50 border border-slate-100 px-2 py-1 rounded-lg">
+                    ${starsHtml}
+                  </div>
+                </div>
+                <p class="text-slate-600 text-xs leading-relaxed font-medium italic">"${reviewText}"</p>
+              </div>
+            `;
             }).join('');
 
             lucide.createIcons();
         } else {
-            feedContainer.innerHTML = `<div class="col-span-full py-8 text-center text-xs text-red-500 font-bold">API returned an operational error code.</div>`;
+            console.error("[Reviews Debug] API request failed with status:", res.status);
+            feedContainer.innerHTML = `<div class="col-span-full py-8 text-center text-xs text-red-500 font-bold">API returned an operational error code. Status: ${res.status}</div>`;
         }
     } catch (err) {
-        console.error("Reviews rendering crashed:", err);
-        feedContainer.innerHTML = `<div class="col-span-full py-8 text-center text-xs text-red-500 font-bold">JavaScript mapping loop encountered a data mismatch error.</div>`;
+        console.error("[Reviews Debug] Javascript rendering cycle crashed:", err);
+        feedContainer.innerHTML = `<div class="col-span-full py-8 text-center text-xs text-red-500 font-bold">JavaScript mapping loop encountered an unexpected data mismatch error. Please check your browser developer tools console.</div>`;
     }
 }
 
