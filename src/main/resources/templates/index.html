@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SalonFlow - Bilingual Booking Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased">
+<div id="toast-container" class="fixed bottom-6 left-6 z-50 flex flex-col gap-3 max-w-sm pointer-events-none"></div>
+
+<nav class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-50 h-16">
+  <div class="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
+    <div class="flex items-center gap-2 text-blue-600 font-black text-xl tracking-tight cursor-pointer" onclick="navigateTo('home')">
+      <i data-lucide="scissors" class="w-6 h-6"></i>
+      <span>SalonFlow</span>
+    </div>
+    <div class="flex items-center gap-4" id="nav-actions"></div>
+  </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 py-8">
+
+  <div th:replace="~{fragments/auth :: auth-views}"></div>
+  <div th:replace="~{fragments/customer :: customer-views}"></div>
+  <div th:replace="~{fragments/partner :: partner-views}"></div>
+  <div th:replace="~{fragments/profile :: profile-view}"></div>
+  <div th:replace="~{fragments/reviews :: reviews-view}"></div>
+
+</main>
+
+<div id="booking-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+  <div class="bg-white rounded-3xl w-full max-w-md shadow-xl overflow-hidden border border-slate-100">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+      <h4 class="font-extrabold text-slate-800 text-sm uppercase tracking-wide">Schedule Treatment</h4>
+      <button onclick="closeBookingModal()" class="p-1.5 rounded-full hover:bg-slate-200 text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+    <div class="p-6 space-y-5">
+      <div class="space-y-1">
+        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Choose Date</label>
+        <input type="date" id="booking-date" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:bg-white outline-none cursor-pointer">
+      </div>
+      <div class="space-y-1">
+        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Available Hours</label>
+        <div id="booking-hours-grid" class="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto custom-scroll pr-1"></div>
+      </div>
+      <div class="pt-3 border-t border-slate-100 flex gap-2">
+        <button onclick="closeBookingModal()" class="w-1/2 py-2.5 border border-slate-200 text-slate-500 rounded-xl text-xs font-bold">Cancel</button>
+        <button onclick="submitBooking()" class="w-1/2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md">Confirm Booking</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="partner-booking-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+  <div class="bg-white rounded-3xl w-full max-w-md shadow-xl overflow-hidden border border-slate-100">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+      <div>
+        <h4 class="font-extrabold text-slate-800 text-sm uppercase tracking-wide">Book Appointment for Client</h4>
+        <p id="partner-booking-client-name" class="text-xs text-slate-500 font-semibold mt-1">Client Name</p>
+      </div>
+      <button onclick="closePartnerBookingModal()" class="p-1.5 rounded-full hover:bg-slate-200 text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+    <div class="p-6 space-y-5">
+      <div class="space-y-1">
+        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Choose Service</label>
+        <select id="partner-booking-service-select" onchange="onPartnerBookingServiceChange(this.value)" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:bg-white"></select>
+      </div>
+      <div class="space-y-1">
+        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Choose Date</label>
+        <input type="date" id="partner-booking-date" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:bg-white outline-none cursor-pointer">
+      </div>
+      <div class="space-y-1">
+        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Available Hours</label>
+        <div id="partner-booking-hours-grid" class="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto custom-scroll pr-1"></div>
+      </div>
+      <div class="pt-3 border-t border-slate-100 flex gap-2">
+        <button onclick="closePartnerBookingModal()" class="w-1/2 py-2.5 border border-slate-200 text-slate-500 rounded-xl text-xs font-bold">Cancel</button>
+        <button onclick="submitPartnerBooking()" class="w-1/2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md">Confirm Booking</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="custom-block-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+  <div class="bg-white rounded-3xl w-full max-w-md shadow-xl overflow-hidden border border-slate-100">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+      <div>
+        <h4 class="font-extrabold text-slate-800 text-sm uppercase tracking-wide">Block Custom Time Range</h4>
+        <p class="text-xs text-slate-500 font-semibold mt-1">Set a custom unavailable interval for your salon</p>
+      </div>
+      <button onclick="closeCustomBlockModal()" class="p-1.5 rounded-full hover:bg-slate-200 text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+    <div class="p-6 space-y-5">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+          <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Start Date</label>
+          <input type="date" id="custom-block-start-date" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none cursor-pointer">
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">End Date</label>
+          <input type="date" id="custom-block-end-date" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none cursor-pointer">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+          <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Start Time</label>
+          <input type="time" id="custom-block-start-time" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none cursor-pointer">
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">End Time</label>
+          <input type="time" id="custom-block-end-time" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none cursor-pointer">
+        </div>
+      </div>
+      <div class="pt-3 border-t border-slate-100 flex gap-2">
+        <button onclick="closeCustomBlockModal()" class="w-1/2 py-2.5 border border-slate-200 text-slate-500 rounded-xl text-xs font-bold">Cancel</button>
+        <button onclick="submitCustomBlock()" class="w-1/2 py-2.5 bg-slate-900 hover:bg-black text-white font-bold text-xs rounded-xl shadow-md">Apply Block</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:src="@{/js/scripts.js}"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="customer-views" class="space-y-12">
+
+    <div id="view-home" class="space-y-12 hidden">
+        <div class="text-center max-w-2xl mx-auto space-y-3">
+            <h1 data-translate="hero.title" class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight leading-tight">Discover specialists matching your style</h1>
+            <p data-translate="hero.subtitle" class="text-slate-500 text-sm font-semibold max-w-md mx-auto">Effortlessly book premium styling, wellness, and care. Hand-vetted salons, tailored for you.</p>
+        </div>
+
+        <div id="active-bookings-card" class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hidden">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="calendar-check" class="w-4 h-4 text-emerald-500"></i>
+                    <span>My Active Bookings</span>
+                </h3>
+            </div>
+            <div id="active-bookings-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+
+        <div class="space-y-6">
+            <h2 data-translate="recommended.title" class="text-xl font-black text-slate-800 tracking-tight">Recommended Salons</h2>
+            <div id="recommended-salons-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        </div>
+
+        <div class="space-y-6">
+            <h2 data-translate="categories.title" class="text-xl font-black text-slate-800 tracking-tight">Browse Categories</h2>
+            <div id="categories-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+        </div>
+    </div>
+
+    <div id="view-category" class="space-y-8 hidden">
+        <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-500 hover:text-slate-800 text-xs font-black cursor-pointer">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Back to Home</span>
+        </button>
+        <div>
+            <h2 id="category-title" class="text-3xl font-black text-slate-900 tracking-tight">Category Name</h2>
+            <p class="text-slate-500 text-sm mt-1">Available stores offering treatments under this specific category</p>
+        </div>
+        <div id="category-salons-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+    </div>
+
+    <div id="view-salon" class="space-y-8 hidden">
+        <button onclick="navigateTo('home')" class="flex items-center gap-2 text-slate-500 hover:text-slate-800 text-xs font-black cursor-pointer">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Back to Home</span>
+        </button>
+        <div class="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-2">
+            <div class="h-64 md:h-auto min-h-[300px] relative bg-slate-100">
+                <img id="salon-hero-image" referrerpolicy="no-referrer" src="" alt="Salon" class="w-full h-full object-cover">
+            </div>
+            <div class="p-8 flex flex-col justify-center space-y-4">
+                <h1 id="salon-hero-name" class="text-3xl font-black text-slate-900 tracking-tight"></h1>
+                <p id="salon-hero-desc" class="text-slate-600 leading-relaxed text-sm"></p>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1.5 bg-yellow-50 text-yellow-800 border border-yellow-100 px-3.5 py-1.5 rounded-xl text-xs font-black w-fit">
+                        <i data-lucide="star" class="w-3.5 h-3.5 fill-yellow-500 text-yellow-500"></i>
+                        <span id="salon-hero-rating">5.0</span>
+                    </div>
+
+                    <button id="salon-view-reviews-btn" onclick="fetchSalonReviewsFeed()" class="...">
+                        <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                        <span>See All Reviews</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="space-y-4">
+            <h3 class="text-xl font-black text-slate-900">Available Services</h3>
+            <div id="salon-services-list" class="grid grid-cols-1 gap-4"></div>
+        </div>
+    </div>
+
+</div>
+
+</html>

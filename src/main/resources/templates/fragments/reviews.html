@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="reviews-view" id="view-reviews" class="space-y-8 hidden animate-fade-in">
+
+  <button id="reviews-back-btn" class="flex items-center gap-2 text-slate-500 hover:text-slate-800 text-xs font-black cursor-pointer">
+    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    <span>Înapoi / Back to Salon</span>
+  </button>
+
+  <div class="space-y-2 border-b border-slate-100 pb-6">
+    <h1 id="reviews-salon-title" class="text-3xl font-black text-slate-900 tracking-tight">Recenzii și evaluări</h1>
+    <div class="flex items-baseline gap-2 mt-2">
+      <span id="reviews-aggregate-score" class="text-4xl font-black text-slate-800">5.0</span>
+      <span id="reviews-total-count" class="text-sm font-semibold text-slate-400">Based on 0 entries</span>
+    </div>
+  </div>
+
+  <div id="salon-reviews-feed-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-1 custom-scroll">
+  </div>
+
+</div>
+</html>

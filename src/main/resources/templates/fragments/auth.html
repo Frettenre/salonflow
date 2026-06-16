@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="auth-views" id="view-login" class="max-w-md mx-auto py-12 hidden">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 space-y-6 transition-all duration-300">
+
+        <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 rounded-2xl mb-2" id="login-mode-tabs">
+            <button id="login-tab-customer" onclick="setLoginMode('customer')" class="py-2.5 rounded-xl text-xs font-black transition-all bg-white text-slate-800 shadow-xs cursor-pointer">
+                Customer Portal
+            </button>
+            <button id="login-tab-partner" onclick="setLoginMode('partner')" class="py-2.5 rounded-xl text-xs font-black transition-all text-slate-500 hover:text-slate-800 cursor-pointer">
+                Partner Portal (PRO)
+            </button>
+        </div>
+
+        <div class="text-center space-y-2">
+            <div class="inline-flex p-4 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100" id="login-logo-badge">
+                <i data-lucide="sparkles" class="w-6 h-6"></i>
+            </div>
+            <h2 data-translate="login.title" class="text-2xl font-black tracking-tight text-slate-800">Welcome to SalonFlow</h2>
+            <p data-translate="login.subtitle" class="text-slate-400 text-xs font-semibold">Bilingual salon appointments styled to perfection</p>
+        </div>
+
+        <div id="login-error" class="bg-red-50 text-red-600 border border-red-100 px-4 py-3 rounded-xl text-xs font-bold hidden"></div>
+
+        <div id="login-step-contact" class="space-y-4">
+            <div class="space-y-1">
+                <label data-translate="login.email.label" class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Email Address</label>
+                <input type="email" id="login-contact-input" placeholder="geicualexandru@gmail.com" class="w-full px-4 py-3 bg-slate-50 border border-slate-250 focus:bg-white text-slate-800 rounded-xl outline-none font-bold text-sm focus:border-blue-500 transition-all">
+            </div>
+            <button data-translate="login.btn.send" onclick="sendOtp()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase rounded-xl transition-all shadow-md">Get Verification Code</button>
+        </div>
+
+        <div id="login-step-otp" class="space-y-4 hidden">
+            <div class="bg-emerald-50 border border-emerald-100 text-emerald-800 p-4 rounded-2xl text-xs space-y-2">
+                <p class="font-bold">✓ Simulated Verification Code Delivered!</p>
+                <p>Check your Spring Boot IntelliJ console window. Copy the code and insert below:</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <span id="simulated-otp-display" class="font-mono font-black text-lg bg-white px-3 py-1 rounded-lg tracking-widest text-emerald-700 border border-emerald-200">------</span>
+                </div>
+            </div>
+            <div class="space-y-1">
+                <label data-translate="login.otp.label" class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Enter 6-Digit Code</label>
+                <input type="text" id="login-otp-input" placeholder="000000" class="w-full px-4 py-3 bg-slate-50 border border-slate-250 text-center font-mono font-black text-lg tracking-widest text-slate-800 rounded-xl outline-none focus:border-blue-500 transition-all">
+            </div>
+            <button data-translate="login.btn.verify" onclick="verifyOtp()" class="w-full py-3.5 bg-blue-600 text-white font-bold text-xs tracking-wider uppercase rounded-xl transition-all">Verify & Log In</button>
+        </div>
+
+        <div id="login-step-register" class="space-y-4 hidden">
+            <div class="space-y-1">
+                <h3 data-translate="reg.title" class="font-extrabold text-sm text-slate-800 uppercase tracking-wider block mb-1">Complete Registration Profile</h3>
+                <p data-translate="reg.subtitle" class="text-[11px] text-slate-400 font-semibold leading-relaxed">Please fill in the required fields below to register your new account.</p>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label data-translate="reg.firstname" class="text-[10px] font-black text-slate-505 uppercase tracking-widest block">First Name *</label>
+                        <input type="text" id="reg-firstname-input" placeholder="Alexandru" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:bg-white focus:border-blue-500">
+                    </div>
+                    <div class="space-y-1">
+                        <label data-translate="reg.lastname" class="text-[10px] font-black text-slate-505 uppercase tracking-widest block">Surname *</label>
+                        <input type="text" id="reg-lastname-input" placeholder="Geicu" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:bg-white focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label data-translate="reg.phone" class="text-[10px] font-black text-slate-505 uppercase tracking-widest block">Phone Number *</label>
+                    <input type="tel" id="reg-phone-input" placeholder="0722123456" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:bg-white focus:border-blue-500">
+                </div>
+
+                <div class="space-y-1">
+                    <label data-translate="reg.birthday" class="text-[10px] font-black text-slate-505 uppercase tracking-widest block">Birthday</label>
+                    <input type="date" id="reg-birthday-input" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:bg-white focus:border-blue-500 cursor-pointer">
+                </div>
+
+                <div class="space-y-1">
+                    <label data-translate="reg.avatar" class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Select Profile Avatar</label>
+                    <div class="grid grid-cols-4 gap-2" id="avatar-presets-grid"></div>
+                </div>
+            </div>
+
+            <button data-translate="reg.btn.submit" onclick="submitUserRegistration()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs tracking-wider uppercase rounded-xl transition-all shadow-md">Complete Registration</button>
+        </div>
+    </div>
+</div>
+</html>
