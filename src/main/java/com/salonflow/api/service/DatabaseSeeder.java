@@ -112,7 +112,8 @@ public class DatabaseSeeder implements CommandLineRunner {
                             .withHour(random.nextInt(12) + 9)
                             .withMinute(random.nextInt(60));
 
-                    review.setDate(randomPastDate.toString());
+                    // Fixed: Passing the native LocalDateTime directly rather than string mapping
+                    review.setDate(randomPastDate);
                     tempReviews.add(review);
                 }
 
@@ -189,7 +190,9 @@ public class DatabaseSeeder implements CommandLineRunner {
             Booking booking = new Booking();
             booking.setSalonId(targetSalonObj.getId());
             booking.setServiceId(targetServiceObj.getId());
-            booking.setBookingDateTime(LocalDateTime.now().plusDays(1).withHour(10).withMinute(0).toString());
+
+            // Fixed: Passing the native LocalDateTime directly rather than string mapping
+            booking.setBookingDateTime(LocalDateTime.now().plusDays(1).withHour(10).withMinute(0));
             booking.setUserContact("geicualexandru@gmail.com");
             bookingRepository.save(booking);
             log.info("[Seeder] Successfully bound dynamic booking to Salon ID: {}", targetSalonObj.getId());
@@ -226,29 +229,21 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
     }
 
-    /**
-     * Generates a skewed review score approximating typical consumer feedback patterns.
-     * Yields ~55% 5-star, ~25% 4-star, ~10% 3-star, ~6% 2-star, and ~4% 1-star ratings.
-     * Expected average rating matches ~4.2 stars.
-     */
     private int generateBiasedStars(Random random) {
         int roll = random.nextInt(100);
         if (roll < 55) {
             return 5;
-        } else if (roll < 80) { // 55 + 25
+        } else if (roll < 80) {
             return 4;
-        } else if (roll < 90) { // 80 + 10
+        } else if (roll < 90) {
             return 3;
-        } else if (roll < 96) { // 90 + 6
+        } else if (roll < 96) {
             return 2;
         } else {
             return 1;
         }
     }
 
-    /**
-     * Retrieves a detailed text review matching the generated star performance index.
-     */
     private String getRandomReviewComment(int stars, Random random) {
         String[] fiveStarComments = {
                 "O experiență absolut minunată! Recomand cu drag salonul.",

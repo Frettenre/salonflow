@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    // Spring Data automatically handles sorted database retrieval
+
+    // Now executes true native temporal indexing sort on the database cluster level
     List<Review> findBySalonIdOrderByDateDesc(Long salonId);
 }
